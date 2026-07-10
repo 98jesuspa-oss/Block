@@ -1,0 +1,100 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ venta.folio }} — VerdeBlock POS{% endblock %}
+{% block page_title %}Nota {{ venta.folio }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'reports:index' %}" class="vb-btn vb-btn-ghost vb-btn-md">Ver reportes</a>
+<button onclick="window.print()" class="vb-btn vb-btn-primary vb-btn-md">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+  Imprimir
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="vb-content-narrow" style="max-width:680px">
+  <div class="vb-nota-sheet">
+    <!-- Header -->
+    <div class="vb-nota-head">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <img src="{% static 'img/logo-verdeblock.png' %}" alt="{{ empresa.nombre }}" style="height:48px;object-fit:contain">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--text)">{{ empresa.nombre }}</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.6">
+            {{ empresa.dir }}<br>
+            Tel. {{ empresa.tel1 }}{% if empresa.tel2 %} / {{ empresa.tel2 }}{% endif %}<br>
+            RFC: {{ empresa.rfc }}
+          </div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;color:var(--text-muted)">NOTA DE REMISION</div>
+        <div class="mono" style="font-size:24px;font-weight:800;color:var(--brand-ink)">{{ venta.folio }}</div>
+        <div style="font-size:13px;color:var(--text-muted)">{{ venta.fecha }} {{ venta.hora|date:"H:i" }}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:20px 0;padding:16px;background:var(--bg-elev);border-radius:var(--radius-sm)">
+      <div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-faint);font-weight:600;margin-bottom:4px">Cliente</div>
+        <div style="font-weight:700;font-size:16px;color:var(--text)">{{ venta.customer.nombre|default:"Público general" }}</div>
+        {% if venta.customer.rfc %}<div style="font-size:13px;color:var(--text-muted)">RFC: {{ venta.customer.rfc|default:"" }}</div>{% endif %}
+        {% if venta.customer.dir %}<div style="font-size:13px;color:var(--text-muted)">{{ venta.customer.dir|default:"" }}</div>{% endif %}
+      </div>
+      <div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-faint);font-weight:600;margin-bottom:4px">Vendedor</div>
+        <div style="font-weight:700;font-size:16px;color:var(--text)">{{ venta.user.get_full_name|default:venta.user.username }}</div>
+        <div style="font-size:13px;color:var(--text-muted)">{{ venta.metodo }}</div>
+        {% if venta.aplica_iva %}<div style="font-size:13px;color:var(--text-muted)">Con IVA 16%</div>{% endif %}
+      </div>
+    </div>
+
+    <!-- Items -->
+    <table class="vb-table" style="margin-bottom:16px">
+      <thead>
+        <tr>
+          <th>Descripcion</th>
+          <th class="num" style="width:80px">Cant.</th>
+          <th class="num" style="width:110px">Precio unit.</th>
+          <th class="num" style="width:110px">Importe</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for item in venta.items.all %}
+      <tr>
+        <td>
+          <div style="font-weight:600">{{ item.product.nombre }}</div>
+          <div style="font-size:12px;color:var(--text-muted)">{{ item.product.sku }}</div>
+        </td>
+        <td class="num tnum">{{ item.cantidad }} {{ item.product.get_unidad_display }}</td>
+        <td class="num tnum">${{ item.precio_unitario|floatformat:2 }}</td>
+        <td class="num tnum" style="font-weight:700">${{ item.importe|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Totals -->
+    <div style="display:flex;justify-content:flex-end">
+      <div style="width:260px">
+        <div class="vb-total-row" style="padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted)">Subtotal</span><span class="tnum" style="font-weight:600">${{ venta.subtotal|floatformat:2 }}</span></div>
+        {% if venta.descuento_monto %}
+        <div class="vb-total-row" style="padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted)">Descuento {{ venta.descuento_pct|floatformat:0 }}%</span><span class="tnum" style="color:var(--danger-ink)">-${{ venta.descuento_monto|floatformat:2 }}</span></div>
+        {% endif %}
+        {% if venta.iva_monto %}
+        <div class="vb-total-row" style="padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text-muted)">IVA 16%</span><span class="tnum">${{ venta.iva_monto|floatformat:2 }}</span></div>
+        {% endif %}
+        <div class="vb-total-row" style="padding:10px 0"><span style="font-weight:700;font-size:17px">TOTAL</span><span class="tnum" style="font-size:22px;font-weight:800;color:var(--brand-ink)">${{ venta.total|floatformat:2 }}</span></div>
+      </div>
+    </div>
+
+    {% if venta.notas %}
+    <div style="margin-top:16px;padding:14px;background:var(--bg-elev);border-radius:var(--radius-sm);font-size:14px;color:var(--text-muted)">
+      <b>Notas:</b> {{ venta.notas }}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

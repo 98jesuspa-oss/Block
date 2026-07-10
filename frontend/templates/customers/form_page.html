@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ cliente.pk|yesno:"Editar cliente,Nuevo cliente" }} — VerdeBlock POS{% endblock %}
+{% block page_title %}{{ cliente.pk|yesno:"Editar cliente,Nuevo cliente" }}{% endblock %}
+
+{% block topbar_actions %}{% endblock %}
+
+{% block content %}
+<div style="max-width:680px">
+  <div class="vb-card" style="padding:32px">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="vb-form-row" style="margin-bottom:18px">
+        <div class="vb-field">
+          <label class="vb-label">Nombre o razon social</label>
+          <input class="vb-input" name="nombre" value="{{ cliente.nombre }}" required autofocus placeholder="Constructora Lopez S.A.">
+        </div>
+        <div class="vb-field">
+          <label class="vb-label">Tipo de cliente</label>
+          <select class="vb-select" name="tipo">
+            <option value="publico" {% if cliente.tipo == 'publico' %}selected{% endif %}>Publico general</option>
+            <option value="mayoreo" {% if cliente.tipo == 'mayoreo' %}selected{% endif %}>Mayoreo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="vb-form-row" style="margin-bottom:18px">
+        <div class="vb-field">
+          <label class="vb-label">Telefono</label>
+          <input class="vb-input" name="tel" value="{{ cliente.tel }}" placeholder="669 233 0000" type="tel">
+        </div>
+        <div class="vb-field">
+          <label class="vb-label">Correo electronico</label>
+          <input class="vb-input" name="email" value="{{ cliente.email }}" placeholder="contacto@empresa.com" type="email">
+        </div>
+      </div>
+
+      <div class="vb-form-row" style="margin-bottom:18px">
+        <div class="vb-field">
+          <label class="vb-label">RFC</label>
+          <input class="vb-input" name="rfc" value="{{ cliente.rfc }}" placeholder="LOPL800101QX7" style="text-transform:uppercase">
+        </div>
+        <div class="vb-field">
+          <label class="vb-label">Contacto</label>
+          <input class="vb-input" name="contacto" value="{{ cliente.contacto }}" placeholder="Nombre del contacto">
+        </div>
+      </div>
+
+      <div class="vb-field" style="margin-bottom:28px">
+        <label class="vb-label">Direccion</label>
+        <input class="vb-input" name="dir" value="{{ cliente.dir }}" placeholder="Calle, colonia, ciudad">
+      </div>
+
+      <div style="display:flex;gap:12px;justify-content:flex-end">
+        <a href="{% url 'customers:index' %}" class="vb-btn vb-btn-ghost vb-btn-md">Cancelar</a>
+        <button type="submit" class="vb-btn vb-btn-primary vb-btn-md">
+          {{ cliente.pk|yesno:"Guardar cambios,Crear cliente" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+﻿<div class="vb-modal-backdrop" x-data x-init="$nextTick(()=>$el.querySelector('[autofocus]')?.focus())" @click.self="document.getElementById('modal-container').innerHTML=''">
+  <div class="vb-modal" role="dialog" aria-modal="true">
+    <div class="vb-modal-header">
+      <h3>{{ producto.pk|yesno:"Editar producto,Nuevo producto" }}</h3>
+      <button class="vb-icon-btn" hx-get="about:blank" hx-target="#modal-container" hx-swap="innerHTML" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form method="post"
+          hx-post="{% if producto.pk %}{% url 'products:update' producto.pk %}{% else %}{% url 'products:create' %}{% endif %}"
+          hx-target="#products-table"
+          hx-swap="outerHTML"
+          hx-on::after-request="if(event.detail.successful) document.getElementById('modal-container').innerHTML=''">
+      {% csrf_token %}
+
+      <div class="vb-modal-body">
+        {% if not producto.pk %}<input type="hidden" name="activo" value="1">{% endif %}
+        <div class="vb-form-row">
+          <div class="vb-field">
+            <label>Nombre</label>
+            <input name="nombre" value="{{ producto.nombre }}" required autofocus placeholder="Bloque 15x30x10 cm">
+          </div>
+          <div class="vb-field">
+            <label>SKU / Clave</label>
+            <input name="sku" value="{{ producto.sku }}" placeholder="BLK-15X30">
+          </div>
+        </div>
+        <div class="vb-form-row">
+          <div class="vb-field">
+            <label>Categoria</label>
+            <select name="categoria">
+              {% for v,l in categorias %}
+              <option value="{{ v }}" {% if producto.categoria == v %}selected{% endif %}>{{ l }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="vb-field">
+            <label>Unidad de medida</label>
+            <select name="unidad">
+              {% for v,l in unidades %}
+              <option value="{{ v }}" {% if producto.unidad == v %}selected{% endif %}>{{ l }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="vb-form-row">
+          <div class="vb-field">
+            <label>Precio unitario</label>
+            <input name="precio" type="number" step="0.01" min="0" value="{{ producto.precio|default_if_none:'' }}" required placeholder="0.00">
+          </div>
+          <div class="vb-field">
+            <label>Precio mayoreo</label>
+            <input name="mayoreo" type="number" step="0.01" min="0" value="{{ producto.mayoreo|default_if_none:'' }}" placeholder="0.00">
+          </div>
+          <div class="vb-field">
+            <label>Costo</label>
+            <input name="costo" type="number" step="0.01" min="0" value="{{ producto.costo|default_if_none:'' }}" placeholder="0.00">
+          </div>
+        </div>
+        <div class="vb-form-row">
+          <div class="vb-field">
+            <label>Existencias actuales</label>
+            <input name="stock" type="number" min="0" value="{{ producto.stock|default:0 }}" required>
+          </div>
+          <div class="vb-field">
+            <label>Stock minimo</label>
+            <input name="stock_min" type="number" min="0" value="{{ producto.stock_min|default:0 }}">
+          </div>
+        </div>
+        <div class="vb-field">
+          <label>Descripcion</label>
+          <textarea name="desc" rows="2" placeholder="Descripcion opcional">{{ producto.desc }}</textarea>
+        </div>
+        {% if producto.pk %}
+        <div class="vb-field" style="display:flex;align-items:center;gap:10px">
+          <input type="checkbox" name="activo" id="prod-activo" value="1" {% if producto.activo %}checked{% endif %} style="width:18px;height:18px">
+          <label for="prod-activo" style="margin:0;cursor:pointer">Producto activo</label>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="vb-modal-footer">
+        {% if producto.pk %}
+        <button type="button" class="vb-btn vb-btn-danger vb-btn-md"
+                hx-post="{% url 'products:delete' producto.pk %}"
+                hx-target="#products-table"
+                hx-swap="outerHTML"
+                hx-confirm="¿Desactivar {{ producto.nombre }}?"
+                hx-on::after-request="if(event.detail.successful) document.getElementById('modal-container').innerHTML=''">
+          Desactivar
+        </button>
+        {% endif %}
+        <div style="flex:1"></div>
+        <button type="button" class="vb-btn vb-btn-ghost vb-btn-md"
+                onclick="document.getElementById('modal-container').innerHTML=''">
+          Cancelar
+        </button>
+        <button type="submit" class="vb-btn vb-btn-primary vb-btn-md">
+          {{ producto.pk|yesno:"Guardar cambios,Crear producto" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

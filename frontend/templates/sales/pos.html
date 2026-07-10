@@ -1,0 +1,278 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Punto de venta — VerdeBlock POS{% endblock %}
+{% block page_title %}Nueva venta{% endblock %}
+{% block content_class %}vb-content-pos{% endblock %}
+
+{% block topbar_actions %}{% endblock %}
+
+{% block content %}
+<div x-data="posStore()" x-cloak>
+
+  <!-- Step bar -->
+  <div class="vb-step-bar">
+    <button class="vb-step" :class="{active: step===1, done: step>1}" @click="goStep(1)">
+      <span class="vb-step-num">1</span>
+      <span class="vb-step-label">Cliente</span>
+    </button>
+    <div class="vb-step-line" :class="{done: step>1}"></div>
+    <button class="vb-step" :class="{active: step===2, done: step>2}" @click="goStep(2)" :disabled="step<2">
+      <span class="vb-step-num">2</span>
+      <span class="vb-step-label">Productos</span>
+    </button>
+    <div class="vb-step-line" :class="{done: step>2}"></div>
+    <button class="vb-step" :class="{active: step===3}" @click="goStep(3)" :disabled="step<3">
+      <span class="vb-step-num">3</span>
+      <span class="vb-step-label">Pago</span>
+    </button>
+  </div>
+
+  <!-- ===================== PASO 1: Cliente ===================== -->
+  <div x-show="step === 1" x-cloak class="vb-paso">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 style="font-size:20px;font-weight:700;margin:0;color:var(--text)">Selecciona el cliente</h3>
+      <button class="vb-btn vb-btn-ghost vb-btn-md"
+              hx-get="{% url 'customers:form' %}"
+              hx-target="#modal-container"
+              hx-swap="innerHTML">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo cliente
+      </button>
+    </div>
+
+    <div class="vb-search" style="margin-bottom:18px;max-width:420px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input placeholder="Buscar cliente…"
+             hx-get="{% url 'customers:search' %}"
+             hx-trigger="keyup changed delay:300ms"
+             hx-target="#clientes-lista"
+             hx-swap="innerHTML"
+             name="q">
+    </div>
+
+    <div id="clientes-lista" class="vb-clientes-grid"
+         hx-get="{% url 'customers:search' %}"
+         hx-trigger="customers:reload from:document"
+         hx-swap="innerHTML">
+      {% for c in clientes %}
+      <button class="vb-cliente-card"
+              :class="{selected: clienteId === {{ c.id }} }"
+              @click="selectCliente({{ c.id }}, '{{ c.nombre|escapejs }}', '{{ c.get_tipo_display }}')"
+              data-id="{{ c.id }}">
+        <div class="vb-avatar vb-avatar-lg" style="background:var(--brand-soft);color:var(--brand-ink)">{{ c.initials }}</div>
+        <div class="vb-cliente-name">{{ c.nombre }}</div>
+        <span class="vb-badge {% if c.tipo == 'mayoreo' %}vb-badge-brand{% else %}vb-badge-default{% endif %}">{{ c.get_tipo_display }}</span>
+      </button>
+      {% endfor %}
+      <button class="vb-cliente-card vb-cliente-new"
+              @click="selectCliente(0, 'Publico general', 'Publico')"
+              :class="{selected: clienteId === 0}">
+        <div class="vb-avatar vb-avatar-lg" style="background:var(--bg-elev);color:var(--text-muted)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        </div>
+        <div class="vb-cliente-name">Publico general</div>
+        <span class="vb-badge vb-badge-default">Sin registro</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== PASO 2: Productos ===================== -->
+  <div x-show="step === 2" x-cloak class="vb-paso vb-paso-productos">
+
+    <div class="vb-pos-layout">
+
+      <!-- Catalogo izquierdo -->
+      <div class="vb-pos-catalog">
+        <div class="vb-pos-cat-toolbar">
+          <div class="vb-search" style="flex:1">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input placeholder="Buscar producto…"
+                   hx-get="{% url 'products:pos_search' %}"
+                   hx-trigger="keyup changed delay:300ms"
+                   hx-target="#pos-catalog-items"
+                   hx-swap="innerHTML"
+                   hx-include="#pos-cat-sel"
+                   name="q">
+          </div>
+          <select id="pos-cat-sel" name="cat" class="vb-select"
+                  hx-get="{% url 'products:pos_search' %}"
+                  hx-trigger="change"
+                  hx-target="#pos-catalog-items"
+                  hx-swap="innerHTML"
+                  hx-include="[name=q]">
+            <option value="">Todos</option>
+            {% for v,l in categorias %}
+            <option value="{{ v }}">{{ l }}</option>
+            {% endfor %}
+          </select>
+          <div style="display:flex;gap:6px">
+            <button class="vb-seg-btn" :class="{active: precioTipo==='auto'}" @click="precioTipo='auto';updatePrices()">Auto</button>
+            <button class="vb-seg-btn" :class="{active: precioTipo==='unitario'}" @click="precioTipo='unitario';updatePrices()">Unit.</button>
+            <button class="vb-seg-btn" :class="{active: precioTipo==='mayoreo'}" @click="precioTipo='mayoreo';updatePrices()">May.</button>
+          </div>
+        </div>
+
+        <div id="pos-catalog-items" class="vb-pos-catalog-grid">
+          {% for p in productos %}
+          <button class="vb-prod-card"
+                  @click="addProduct({{ p.id }}, '{{ p.nombre|escapejs }}', {{ p.precio }}, {{ p.mayoreo|default:p.precio }}, {{ p.stock }}, '{{ p.unidad }}')"
+                  data-prod-id="{{ p.id }}"
+                  data-precio="{{ p.precio }}"
+                  data-mayoreo="{{ p.mayoreo|default:p.precio }}"
+                  {% if p.stock == 0 %}disabled title="Sin existencias"{% endif %}>
+            <div class="vb-prod-card-icon">{{ p.nombre|slice:":2"|upper }}</div>
+            <div class="vb-prod-card-name">{{ p.nombre }}</div>
+            <div class="vb-prod-card-price">${{ p.precio|floatformat:2 }}</div>
+            <div class="vb-prod-card-stock {% if p.bajo_stock %}low{% endif %}">{{ p.stock }} {{ p.get_unidad_display }}</div>
+            <div class="vb-prod-card-badge" x-show="inCart({{ p.id }}) > 0" x-text="inCart({{ p.id }})"></div>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Carrito derecho -->
+      <div class="vb-pos-cart">
+        <div class="vb-cart-head">
+          <div style="font-weight:700;font-size:17px;color:var(--text)">
+            Carrito
+            <span style="font-weight:400;font-size:14px;color:var(--text-muted)" x-show="cart.length > 0">
+              (<span x-text="piezas"></span> pzas)
+            </span>
+          </div>
+          <span style="font-size:14px;color:var(--text-muted)" x-text="clienteNombre"></span>
+        </div>
+
+        <div class="vb-cart-items" x-show="cart.length > 0">
+          <template x-for="line in cart" :key="line.id">
+            <div class="vb-cart-line">
+              <div class="vb-cart-line-name" x-text="line.nombre"></div>
+              <div class="vb-cart-line-controls">
+                <button class="vb-qty-btn" @click="updateQty(line.id, line.cant - (line.unidad==='pieza' ? 10 : 1))">−</button>
+                <input class="vb-qty-input" type="number" :value="line.cant" @change="updateQty(line.id, $event.target.value)" min="1">
+                <button class="vb-qty-btn" @click="updateQty(line.id, line.cant + (line.unidad==='pieza' ? 10 : 1))">+</button>
+              </div>
+              <div class="vb-cart-line-total tnum" x-text="formatMoney(line.cant * line.precio)"></div>
+              <button class="vb-icon-btn" @click="removeLine(line.id)" style="color:var(--text-faint)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <div class="vb-cart-empty" x-show="cart.length === 0">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text-faint)"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span>Agrega productos al carrito</span>
+        </div>
+
+        <div class="vb-cart-totals" x-show="cart.length > 0">
+          <div class="vb-total-row"><span>Subtotal</span><span class="tnum" x-text="formatMoney(sub)"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PASO 3: Pago ===================== -->
+  <div x-show="step === 3" x-cloak class="vb-paso">
+
+    <!-- Success overlay -->
+    <div x-show="showSuccess" x-cloak class="vb-success-overlay">
+      <div class="vb-success-card">
+        <div class="vb-success-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div style="font-size:26px;font-weight:800;color:var(--text)">Venta registrada</div>
+        <div class="mono" style="font-size:20px;font-weight:700;color:var(--brand-ink)" x-text="lastFolio"></div>
+        <div style="display:flex;gap:12px;margin-top:20px">
+          <a :href="`/sales/nota/${lastFolio}/`" target="_blank" class="vb-btn vb-btn-ghost vb-btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Imprimir nota
+          </a>
+          <button class="vb-btn vb-btn-primary vb-btn-lg" @click="reset()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva venta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="!showSuccess" style="display:flex;gap:24px;align-items:flex-start">
+      <!-- Totals left -->
+      <div style="flex:1;min-width:0">
+        <div class="vb-card" style="padding:26px;margin-bottom:16px">
+          <h3 style="font-size:18px;font-weight:700;margin:0 0 18px;color:var(--text)">Resumen de la venta</h3>
+
+          <div class="vb-total-rows">
+            <div class="vb-total-row"><span>Subtotal</span><span class="tnum" x-text="formatMoney(sub)"></span></div>
+            <div class="vb-total-row">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span>Descuento</span>
+                <select x-model.number="descPct" class="vb-select-inline">
+                  <option value="0">0%</option>
+                  <option value="0.05">5%</option>
+                  <option value="0.10">10%</option>
+                  <option value="0.15">15%</option>
+                  <option value="0.20">20%</option>
+                </select>
+              </div>
+              <span class="tnum" style="color:var(--danger-ink)" x-text="descMonto > 0 ? '-'+formatMoney(descMonto) : '—'"></span>
+            </div>
+            <div class="vb-total-row">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" x-model="iva" style="width:18px;height:18px">
+                <span>IVA 16%</span>
+              </label>
+              <span class="tnum" x-text="ivaMonto > 0 ? formatMoney(ivaMonto) : '—'"></span>
+            </div>
+            <div class="vb-total-row vb-total-final">
+              <span>Total</span>
+              <span class="tnum" style="font-size:32px;font-weight:800;color:var(--brand-ink)" x-text="formatMoney(total)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment right -->
+      <div style="width:300px;flex-shrink:0">
+        <div class="vb-card" style="padding:24px">
+          <h3 style="font-size:18px;font-weight:700;margin:0 0 16px;color:var(--text)">Forma de pago</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+            {% for metodo in metodos_pago %}
+            <label style="display:flex;align-items:center;gap:10px;padding:14px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:16px;font-weight:550;color:var(--text)"
+                   :style="metodo==='{{ metodo }}' && {borderColor:'var(--brand)',background:'var(--brand-soft)'}">
+              <input type="radio" name="metodo" value="{{ metodo }}" x-model="metodo" style="width:18px;height:18px">
+              {{ metodo }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="vb-action-bar">
+    <button class="vb-btn vb-btn-ghost vb-btn-lg" @click="prev()" x-show="step > 1">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Atras
+    </button>
+    <a href="{% url 'dashboard:index' %}" class="vb-btn vb-btn-ghost vb-btn-lg" x-show="step === 1">Cancelar</a>
+    <div style="flex:1"></div>
+    <div style="font-size:15px;color:var(--text-muted)" x-show="step===2 && cart.length>0">
+      <span x-text="cart.length"></span> producto(s) ·
+      <span class="tnum" x-text="formatMoney(sub)"></span>
+    </div>
+    <button class="vb-btn vb-btn-primary vb-btn-lg" @click="next()" :disabled="!canNext" x-show="step < 3">
+      Continuar
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button class="vb-btn vb-btn-primary vb-btn-lg" x-show="step === 3 && !showSuccess" @click="confirmar()" :disabled="submitting || cart.length===0">
+      <span x-show="!submitting">Confirmar venta</span>
+      <span x-show="submitting">Procesando…</span>
+    </button>
+  </div>
+
+</div>
+
+<div id="modal-container"></div>
+{% endblock %}

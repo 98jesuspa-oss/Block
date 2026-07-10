@@ -1,0 +1,16 @@
+﻿{% for p in productos %}
+<button class="vb-prod-card"
+        @click="addProduct({{ p.id }}, '{{ p.nombre|escapejs }}', {{ p.precio }}, {{ p.mayoreo|default:p.precio }}, {{ p.stock }}, '{{ p.unidad }}')"
+        data-prod-id="{{ p.id }}"
+        data-precio="{{ p.precio }}"
+        data-mayoreo="{{ p.mayoreo|default:p.precio }}"
+        {% if p.stock == 0 %}disabled title="Sin existencias"{% endif %}>
+  <div class="vb-prod-card-icon">{{ p.nombre|slice:":2"|upper }}</div>
+  <div class="vb-prod-card-name">{{ p.nombre }}</div>
+  <div class="vb-prod-card-price">${{ p.precio|floatformat:2 }}</div>
+  <div class="vb-prod-card-stock {% if p.bajo_stock %}low{% endif %}">{{ p.stock }} {{ p.get_unidad_display }}</div>
+  <div class="vb-prod-card-badge" x-show="inCart({{ p.id }}) > 0" x-text="inCart({{ p.id }})"></div>
+</button>
+{% empty %}
+<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)">Sin resultados</div>
+{% endfor %}

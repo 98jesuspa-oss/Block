@@ -1,0 +1,21 @@
+﻿{% for c in clientes %}
+<button class="vb-cliente-card"
+        :class="{selected: clienteId === {{ c.id }} }"
+        @click="selectCliente({{ c.id }}, '{{ c.nombre|escapejs }}', '{{ c.get_tipo_display }}')"
+        data-id="{{ c.id }}">
+  <div class="vb-avatar vb-avatar-lg" style="background:var(--brand-soft);color:var(--brand-ink)">{{ c.initials }}</div>
+  <div class="vb-cliente-name">{{ c.nombre }}</div>
+  <span class="vb-badge {% if c.tipo == 'mayoreo' %}vb-badge-brand{% else %}vb-badge-default{% endif %}">{{ c.get_tipo_display }}</span>
+</button>
+{% empty %}
+<div style="color:var(--text-muted);text-align:center;padding:20px;width:100%">Sin clientes</div>
+{% endfor %}
+<button class="vb-cliente-card vb-cliente-new"
+        @click="selectCliente(0, 'Publico general', 'Publico')"
+        :class="{selected: clienteId === 0}">
+  <div class="vb-avatar vb-avatar-lg" style="background:var(--bg-elev);color:var(--text-muted)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+  </div>
+  <div class="vb-cliente-name">Publico general</div>
+  <span class="vb-badge vb-badge-default">Sin registro</span>
+</button>

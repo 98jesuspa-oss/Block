@@ -1,0 +1,50 @@
+﻿<div id="customers-table" class="vb-card" style="padding:0">
+  <div class="vb-table-wrap">
+    <table class="vb-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Telefono</th>
+          <th>RFC</th>
+          <th class="num">Compras</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in clientes %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="vb-avatar" style="width:38px;height:38px;font-size:15px;flex-shrink:0;background:var(--brand-soft);color:var(--brand-ink)">{{ c.initials }}</div>
+            <div>
+              <div style="font-weight:650">{{ c.nombre }}</div>
+              {% if c.email %}<div style="font-size:13px;color:var(--text-muted)">{{ c.email }}</div>{% endif %}
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="vb-badge {% if c.tipo == 'mayoreo' %}vb-badge-brand{% else %}vb-badge-ok{% endif %}">
+            {{ c.get_tipo_display }}
+          </span>
+        </td>
+        <td style="color:var(--text-muted)">{{ c.tel|default:"—" }}</td>
+        <td class="mono" style="font-size:13.5px;color:var(--text-muted)">{{ c.rfc|default:"—" }}</td>
+        <td class="num" style="font-weight:600">{{ c.sale_set.count }}</td>
+        <td style="width:40px">
+          <button class="vb-icon-btn"
+                  hx-get="{% url 'customers:form_edit' c.id %}"
+                  hx-target="#modal-container"
+                  hx-swap="innerHTML"
+                  title="Editar">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:40px">Sin clientes registrados</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

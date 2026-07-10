@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<title>{% block title %}VerdeBlock POS{% endblock %}</title>
+<link rel="icon" type="image/png" href="{% static 'img/logo-verdeblock.png' %}">
+<style>[x-cloak]{display:none!important}</style>
+<link rel="stylesheet" href="{% static 'css/verdeblock.css' %}">
+<script src="{% static 'js/htmx.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+<script src="{% static 'js/gsap.min.js' %}"></script>
+<script src="{% static 'js/animations.js' %}"></script>
+<script src="{% static 'js/alpine.min.js' %}" defer></script>
+{% block extra_head %}{% endblock %}
+</head>
+<body x-data x-init="$store.theme.init()" :data-theme="$store.theme.theme">
+
+{% block body %}
+<div id="app" class="vb-app">
+
+  <!-- Sidebar -->
+  <aside class="vb-sidebar" :class="{ collapsed: $store.sidebar.collapsed }">
+    <div class="vb-brand">
+      <div class="vb-brand-logo">
+        <img src="{% static 'img/logo-verdeblock.png' %}" alt="VerdeBlock">
+      </div>
+      <div class="vb-brand-text">
+        <div class="vb-brand-name">Verde<span class="vb-g">Block</span></div>
+        <div class="vb-brand-sub">Punto de venta</div>
+      </div>
+    </div>
+
+    <nav class="vb-nav">
+      <a href="{% url 'dashboard:index' %}" class="vb-nav-item {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+        {% include "partials/icons.html" with name="dashboard" %}
+        <span class="vb-nav-text">Inicio</span>
+      </a>
+      <a href="{% url 'sales:pos' %}" class="vb-nav-item {% if request.resolver_match.namespace == 'sales' %}active{% endif %}">
+        {% include "partials/icons.html" with name="pos" %}
+        <span class="vb-nav-text">Ventas</span>
+      </a>
+      <a href="{% url 'products:index' %}" class="vb-nav-item {% if request.resolver_match.namespace == 'products' %}active{% endif %}">
+        {% include "partials/icons.html" with name="box" %}
+        <span class="vb-nav-text">Productos</span>
+        {% if bajos_count %}
+        <span class="vb-nav-badge">{{ bajos_count }}</span>
+        {% endif %}
+      </a>
+      <a href="{% url 'customers:index' %}" class="vb-nav-item {% if request.resolver_match.namespace == 'customers' %}active{% endif %}">
+        {% include "partials/icons.html" with name="users" %}
+        <span class="vb-nav-text">Clientes</span>
+      </a>
+      <a href="{% url 'reports:index' %}" class="vb-nav-item {% if request.resolver_match.namespace == 'reports' %}active{% endif %}">
+        {% include "partials/icons.html" with name="chart" %}
+        <span class="vb-nav-text">Reportes</span>
+      </a>
+      <a href="{% url 'config:index' %}" class="vb-nav-item {% if request.resolver_match.namespace == 'config' %}active{% endif %}">
+        {% include "partials/icons.html" with name="settings" %}
+        <span class="vb-nav-text">Configuracion</span>
+      </a>
+    </nav>
+
+    <div class="vb-sidebar-foot">
+      <a href="{% url 'accounts:logout' %}" class="vb-user-card" title="Cerrar sesion">
+        <div class="vb-avatar" style="width:40px;height:40px;font-size:16px;background:var(--brand-soft);color:var(--brand-ink);">
+          {{ request.user.initials }}
+        </div>
+        <div class="vb-user-meta">
+          <b>{{ request.user.get_full_name|default:request.user.username }}</b>
+          <span>{{ request.user.display_role }}</span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-faint);flex-shrink:0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="vb-main">
+    <header class="vb-topbar">
+      <button class="vb-icon-btn" @click="$store.sidebar.toggle()" title="Colapsar menu">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <h1>{% block page_title %}{% endblock %}</h1>
+      </div>
+      <div class="vb-topbar-spacer"></div>
+      {% block topbar_actions %}
+      <div class="vb-search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input placeholder="Buscar…">
+      </div>
+      {% endblock %}
+      <button class="vb-icon-btn" @click="$store.theme.toggle()" title="Cambiar tema">
+        <svg x-show="$store.theme.theme === 'light'" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg x-show="$store.theme.theme === 'dark'" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      {% if request.resolver_match.namespace != 'sales' %}
+      <a href="{% url 'sales:pos' %}" class="vb-btn vb-btn-primary vb-btn-md">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Nueva venta
+      </a>
+      {% endif %}
+    </header>
+
+    <div class="vb-content {% block content_class %}{% endblock %}">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast notifications -->
+<div class="vb-toast-wrap" x-data x-show="$store.toast.items.length > 0">
+  <template x-for="t in $store.toast.items" :key="t.id">
+    <div class="vb-toast">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span x-text="t.msg"></span>
+    </div>
+  </template>
+</div>
+
+{% endblock body %}
+</body>
+</html>

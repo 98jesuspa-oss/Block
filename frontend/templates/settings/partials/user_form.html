@@ -1,0 +1,52 @@
+﻿<div class="vb-modal-backdrop" @click.self="$el.innerHTML=''">
+  <div class="vb-modal" style="max-width:440px">
+    <div class="vb-modal-header">
+      <h3>{% if usuario.pk %}Editar usuario{% else %}Nuevo usuario{% endif %}</h3>
+      <button class="vb-icon-btn" onclick="document.getElementById('user-modal').innerHTML=''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form hx-post="{% if usuario.pk %}{% url 'config:user_form_edit' usuario.pk %}{% else %}{% url 'config:user_form' %}{% endif %}"
+          hx-target="#user-modal"
+          hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful) document.getElementById('user-modal').innerHTML=''">
+      {% csrf_token %}
+      <div class="vb-modal-body">
+        {% if not usuario.pk %}
+        <div class="vb-field" style="margin-bottom:14px">
+          <label>Nombre de usuario</label>
+          <input name="username" required autofocus placeholder="usuario.apellido">
+        </div>
+        {% endif %}
+        <div class="vb-form-row">
+          <div class="vb-field">
+            <label>Nombre</label>
+            <input name="first_name" value="{{ usuario.first_name }}" {% if usuario.pk %}autofocus{% endif %} required>
+          </div>
+          <div class="vb-field">
+            <label>Apellido</label>
+            <input name="last_name" value="{{ usuario.last_name }}">
+          </div>
+        </div>
+        <div class="vb-form-row">
+          <div class="vb-field">
+            <label>Rol</label>
+            <select name="role">
+              <option value="vendor" {% if usuario.role == 'vendor' %}selected{% endif %}>Vendedor</option>
+              <option value="admin" {% if usuario.role == 'admin' %}selected{% endif %}>Administrador</option>
+            </select>
+          </div>
+          <div class="vb-field">
+            <label>PIN de acceso (4 digitos)</label>
+            <input name="pin" maxlength="4" pattern="\d{4}" placeholder="••••" type="password" autocomplete="new-password">
+          </div>
+        </div>
+      </div>
+      <div class="vb-modal-footer">
+        <div style="flex:1"></div>
+        <button type="button" class="vb-btn vb-btn-ghost vb-btn-md" onclick="document.getElementById('user-modal').innerHTML=''">Cancelar</button>
+        <button type="submit" class="vb-btn vb-btn-primary vb-btn-md">{% if usuario.pk %}Guardar{% else %}Crear usuario{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,62 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Resumen mensual — VerdeBlock POS{% endblock %}
+{% block page_title %}Resumen mensual{% endblock %}
+
+{% block content %}
+<div class="vb-content-narrow" style="max-width:760px">
+  <div class="vb-nota-sheet">
+    <div class="vb-nota-head">
+      <div style="display:flex;align-items:center;gap:14px">
+        <img src="{% static 'img/logo-verdeblock.png' %}" alt="VerdeBlock" style="height:44px">
+        <div>
+          <div style="font-size:22px;font-weight:800;color:var(--text)">Resumen mensual</div>
+          <div style="font-size:14px;color:var(--text-muted)">{{ mes_label }}</div>
+        </div>
+      </div>
+      <button onclick="window.print()" class="vb-btn vb-btn-ghost vb-btn-md" style="print:none">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir
+      </button>
+    </div>
+
+    <div class="vb-grid vb-grid-3" style="margin:22px 0">
+      <div class="vb-stat-mini">
+        <div>Ingresos del mes</div>
+        <div class="tnum">${{ total_mes|floatformat:2 }}</div>
+        <div class="{% if delta_pct >= 0 %}vb-delta-up{% else %}vb-delta-down{% endif %}">
+          {% if delta_pct >= 0 %}+{% endif %}{{ delta_pct|floatformat:1 }}% vs mes anterior
+        </div>
+      </div>
+      <div class="vb-stat-mini">
+        <div>Ventas realizadas</div>
+        <div class="tnum">{{ total_ventas }}</div>
+      </div>
+      <div class="vb-stat-mini">
+        <div>Ticket promedio</div>
+        <div class="tnum">${{ ticket_promedio|floatformat:2 }}</div>
+      </div>
+    </div>
+
+    <h4 style="font-size:16px;font-weight:700;margin:0 0 12px;color:var(--text)">Top 10 productos vendidos</h4>
+    <table class="vb-table" style="margin-bottom:24px">
+      <thead><tr><th>#</th><th>Producto</th><th class="num">Cantidad</th><th class="num">Importe</th></tr></thead>
+      <tbody>
+      {% for item in top_items %}
+      <tr>
+        <td style="color:var(--text-faint);width:32px">{{ forloop.counter }}</td>
+        <td>{{ item.product__nombre }}</td>
+        <td class="num">{{ item.total_cant }}</td>
+        <td class="num" style="font-weight:700">${{ item.total_importe|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div style="border-top:1px solid var(--border);padding-top:16px;font-size:13px;color:var(--text-faint)">
+      Generado el {{ now|date:"d/m/Y H:i" }} · {{ empresa.nombre }} · {{ empresa.rfc }}
+    </div>
+  </div>
+</div>
+{% endblock %}
