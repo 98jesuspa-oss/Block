@@ -1,0 +1,96 @@
+﻿[
+  {
+    "model": "accounts.user",
+    "pk": 1,
+    "fields": {
+      "username": "admin",
+      "first_name": "Carlos",
+      "last_name": "Lopez",
+      "email": "admin@verdeblock.mx",
+      "is_staff": true,
+      "is_superuser": true,
+      "is_active": true,
+      "role": "admin",
+      "pin": "1234",
+      "avatar_color": "#04b906",
+      "password": "pbkdf2_sha256$720000$placeholder$placeholder="
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 2,
+    "fields": {
+      "username": "vendedor1",
+      "first_name": "Maria",
+      "last_name": "Rojas",
+      "email": "maria@verdeblock.mx",
+      "is_staff": false,
+      "is_superuser": false,
+      "is_active": true,
+      "role": "vendor",
+      "pin": "5678",
+      "avatar_color": "#3a72b8",
+      "password": "pbkdf2_sha256$720000$placeholder$placeholder="
+    }
+  },
+  {
+    "model": "customers.customer",
+    "pk": 1,
+    "fields": {"nombre": "Constructora Lopez", "tel": "669 233 1593", "tipo": "mayoreo", "activo": true, "rfc": "CLO930210QX7", "email": "contacto@constructoralopez.mx", "dir": "Col. Flores, Mazatlan, Sinaloa", "contacto": "Juan Lopez", "notas": ""}
+  },
+  {
+    "model": "customers.customer",
+    "pk": 2,
+    "fields": {"nombre": "Ferretera Martinez", "tel": "669 417 6769", "tipo": "mayoreo", "activo": true, "rfc": "FMA011018AB3", "email": "", "dir": "Av. Insurgentes 450, Mazatlan", "contacto": "Pedro Martinez", "notas": ""}
+  },
+  {
+    "model": "customers.customer",
+    "pk": 3,
+    "fields": {"nombre": "Juan Perez", "tel": "669 100 2200", "tipo": "publico", "activo": true, "rfc": "", "email": "", "dir": "Col. Ejidal, Mazatlan", "contacto": "", "notas": ""}
+  },
+  {
+    "model": "customers.customer",
+    "pk": 4,
+    "fields": {"nombre": "Ana Sanchez", "tel": "669 555 0100", "tipo": "publico", "activo": true, "rfc": "", "email": "ana@email.com", "dir": "", "contacto": "", "notas": ""}
+  },
+  {
+    "model": "products.product",
+    "pk": 1,
+    "fields": {"sku": "BLK-15X30", "nombre": "Bloque 15x30x10 cm", "desc": "Bloque hueco de concreto para mamposteria", "categoria": "block", "unidad": "pieza", "precio": "5.50", "mayoreo": "4.80", "costo": "3.20", "stock": 2400, "stock_min": 500, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 2,
+    "fields": {"sku": "BLK-20X40", "nombre": "Bloque 20x40x15 cm", "desc": "Bloque macizo de alta resistencia", "categoria": "block", "unidad": "pieza", "precio": "8.50", "mayoreo": "7.20", "costo": "5.00", "stock": 1800, "stock_min": 400, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 3,
+    "fields": {"sku": "CEM-50KG", "nombre": "Cemento Portland 50 kg", "desc": "Cemento gris tipo I", "categoria": "cemento", "unidad": "saco", "precio": "185.00", "mayoreo": "170.00", "costo": "140.00", "stock": 340, "stock_min": 80, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 4,
+    "fields": {"sku": "VAR-3/8", "nombre": "Varilla 3/8 x 6m", "desc": "Varilla corrugada de acero", "categoria": "acero", "unidad": "pieza", "precio": "95.00", "mayoreo": "88.00", "costo": "65.00", "stock": 12, "stock_min": 20, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 5,
+    "fields": {"sku": "AGR-GRAVA", "nombre": "Grava 3/4 m3", "desc": "Grava triturada para concreto", "categoria": "agregados", "unidad": "m3", "precio": "380.00", "mayoreo": "350.00", "costo": "280.00", "stock": 45, "stock_min": 10, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 6,
+    "fields": {"sku": "AGR-ARENA", "nombre": "Arena fina m3", "desc": "Arena lavada para construccion", "categoria": "agregados", "unidad": "m3", "precio": "320.00", "mayoreo": "295.00", "costo": "220.00", "stock": 38, "stock_min": 10, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 7,
+    "fields": {"sku": "PRE-ADOQ", "nombre": "Adoquin 6 cm color", "desc": "Adoquin prefabricado para exteriores", "categoria": "prefabricados", "unidad": "m2", "precio": "145.00", "mayoreo": "130.00", "costo": "95.00", "stock": 8, "stock_min": 20, "activo": true}
+  },
+  {
+    "model": "products.product",
+    "pk": 8,
+    "fields": {"sku": "CEM-BLAN", "nombre": "Cemento blanco 5 kg", "desc": "Cemento blanco para acabados", "categoria": "cemento", "unidad": "saco", "precio": "95.00", "mayoreo": "85.00", "costo": "65.00", "stock": 52, "stock_min": 15, "activo": true}
+  }
+]
